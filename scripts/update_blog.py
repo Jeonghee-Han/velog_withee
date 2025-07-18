@@ -40,5 +40,5 @@ for entry in feed.entries:
         # 이미 최신 상태면 커밋 생략 (변경 없음)
         pass
 
-# 최종 push
-repo.git.push()
+# 푸시는 워크플로우에서 수행하므로 여기서는 하지 않음
+# repo.git.push()
