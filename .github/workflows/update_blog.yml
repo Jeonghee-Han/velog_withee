@@ -15,6 +15,9 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: Pull latest changes
+      run: git pull --rebase origin main
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -27,9 +30,8 @@ jobs:
     - name: Run script
       run: python scripts/update_blog.py
 
-    - name: Push changes 
+    - name: Push changes
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git pull --rebase origin main
         git push https://${{ secrets.GH_PAT_WITHEE }}@github.com/Jeonghee-Han/velog_withee.git
