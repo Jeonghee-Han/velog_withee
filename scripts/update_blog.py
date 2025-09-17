@@ -1,44 +1,35 @@
 import feedparser
-import git
 import os
+import re
 
 # 벨로그 RSS 피드 URL
-# example : rss_url = 'https://api.velog.io/rss/@soozi'
-rss_url = 'https://api.velog.io/rss/@heerang'
+RSS_URL = 'https://api.velog.io/rss/@heerang'
 
-# 깃허브 레포지토리 경로
-repo_path = '.'
-
-# 'velog-posts' 폴더 경로
-posts_dir = os.path.join(repo_path, 'velog-posts')
+# 게시물을 저장할 디렉토리 경로
+POSTS_DIR = 'velog-posts'
 
 # 'velog-posts' 폴더가 없다면 생성
-if not os.path.exists(posts_dir):
-    os.makedirs(posts_dir)
-
-# 레포지토리 로드
-repo = git.Repo(repo_path)
+if not os.path.exists(POSTS_DIR):
+    os.makedirs(POSTS_DIR)
 
 # RSS 피드 파싱
-feed = feedparser.parse(rss_url)
+feed = feedparser.parse(RSS_URL)
 
-# 각 글을 파일로 저장하고 커밋
+# 각 게시물을 파일로 저장
 for entry in feed.entries:
-    # 제목 → 파일명으로 (슬래시 제거 등)
-    file_name = entry.title.replace('/', '-').replace('\\', '-') + '.md'
-    file_path = os.path.join(posts_dir, file_name)
+    # 파일명으로 사용할 수 없는 문자 제거 또는 변경
+    file_name = re.sub(r'[\\/*?:"<>|]', "", entry.title) + '.md'
+    file_path = os.path.join(POSTS_DIR, file_name)
+    
+    # 글 내용 (HTML 태그 포함)
+    content = entry.description
+    
+    # 파일에 내용 작성 (항상 덮어쓰기)
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write(f'# {entry.title}\n\n')
+        f.write(f'**Published:** {entry.published}\n')
+        f.write(f'**Link:** {entry.link}\n\n')
+        f.write('---\n\n')
+        f.write(content)
 
-    # 글 내용을 파일에 항상 덮어쓰기 (새로 쓴 글이든 수정이든)
-    with open(file_path, 'w', encoding='utf-8') as file:
-        file.write(entry.description)
-
-    # 변경사항이 있으면 커밋
-    repo.git.add(file_path)
-    try:
-        repo.git.commit('-m', f'Update post: {entry.title}')
-    except git.GitCommandError:
-        # 이미 최신 상태면 커밋 생략 (변경 없음)
-        pass
-
-# 푸시는 워크플로우에서 수행하므로 여기서는 하지 않음
-# repo.git.push()
+print(f"총 {len(feed.entries)}개의 포스트를 확인하고 업데이트했습니다.")
