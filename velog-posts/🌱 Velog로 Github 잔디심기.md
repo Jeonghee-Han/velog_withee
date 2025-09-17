@@ -1,3 +1,10 @@
+# 🌱 Velog로 Github 잔디심기
+
+**Published:** Thu, 17 Jul 2025 05:45:55 GMT
+**Link:** https://velog.io/@heerang/Velog%EB%A1%9C-Github-%EC%9E%94%EB%94%94%EC%8B%AC%EA%B8%B0
+
+---
+
 <p>필기의 대부분은 그때그때 노션으로 하지만, 개인적인 공부나, SSAFY의 전반적인 생활 내용 또는 복습한 내용들을 velog에 정리해서 올릴 계획이다.
 velog에 올린 내용들이 자동으로 github에 md 형식으로 올라갔으면 해서 이 둘을 연동시켰다.</p>
 <h3 id="1-github-repository">1. github repository</h3>
@@ -25,13 +32,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Push changes
-      run: |
-        git config --global user.name 'github-actions[bot]'
-        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-        git push https://${{ secrets.GH_PAT_WITHEE }}@github.com/Jeonghee-Han/velog_withee.git 
-       # ⭐ git push https:// + ${{ secrets.본인 토큰명 }} + 본인 github repo 주소
-
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -43,6 +43,14 @@ jobs:
 
     - name: Run script
       run: python scripts/update_blog.py
+
+    - name: Push changes
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git push https://${{ secrets.GH_PAT_WITHEE }}@github.com/Jeonghee-Han/velog_withee.git 
+       # ⭐ git push https:// + ${{ secrets.본인 토큰명 }} + 본인 github repo 주소
+
 </code></pre>
 <p>✅<code>update_blog.py</code></p>
 <pre><code class="language-python">import feedparser
@@ -71,25 +79,24 @@ feed = feedparser.parse(rss_url)
 
 # 각 글을 파일로 저장하고 커밋
 for entry in feed.entries:
-    # 파일 이름에서 유효하지 않은 문자 제거 또는 대체
-    file_name = entry.title
-    file_name = file_name.replace('/', '-')  # 슬래시를 대시로 대체
-    file_name = file_name.replace('\\', '-')  # 백슬래시를 대시로 대체
-    # 필요에 따라 추가 문자 대체
-    file_name += '.md'
+    # 제목 → 파일명으로 (슬래시 제거 등)
+    file_name = entry.title.replace('/', '-').replace('\\', '-') + '.md'
     file_path = os.path.join(posts_dir, file_name)
 
-    # 파일이 이미 존재하지 않으면 생성
-    if not os.path.exists(file_path):
-        with open(file_path, 'w', encoding='utf-8') as file:
-            file.write(entry.description)  # 글 내용을 파일에 작성
+    # 글 내용을 파일에 항상 덮어쓰기 (새로 쓴 글이든 수정이든)
+    with open(file_path, 'w', encoding='utf-8') as file:
+        file.write(entry.description)
 
-        # 깃허브 커밋
-        repo.git.add(file_path)
-        repo.git.commit('-m', f'Add post: {entry.title}')
+    # 변경사항이 있으면 커밋
+    repo.git.add(file_path)
+    try:
+        repo.git.commit('-m', f'Update post: {entry.title}')
+    except git.GitCommandError:
+        # 이미 최신 상태면 커밋 생략 (변경 없음)
+        pass
 
-# 변경 사항을 깃허브에 푸시
-repo.git.push()</code></pre>
+# 푸시는 워크플로우에서 수행하므로 여기서는 하지 않음
+# repo.git.push()</code></pre>
 <h3 id="pat-권한">PAT 권한</h3>
 <p><code>github 계정</code> → <code>Settings</code> → <code>Developer Settings</code> → <code>Personal access tokens (classic)</code> → <code>Generate New Token</code>
 <img alt="" src="https://velog.velcdn.com/images/heerang/post/099db1e0-23f2-4585-8c0d-3ef08e26e171/image.png" />✅ <code>Note</code>: 본인 토큰명 → <code>repo</code>, <code>workflow</code> 체크 → <code>Generate new token</code> <img alt="" src="https://velog.velcdn.com/images/heerang/post/23fcda77-0bd1-4c32-9a01-623935d44071/image.png" />

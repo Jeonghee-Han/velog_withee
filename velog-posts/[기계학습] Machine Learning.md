@@ -1,3 +1,10 @@
+# [기계학습] Machine Learning
+
+**Published:** Wed, 27 Mar 2024 05:01:46 GMT
+**Link:** https://velog.io/@heerang/%EA%B8%B0%EA%B3%84%ED%95%99%EC%8A%B5-Machine-Learning
+
+---
+
 <h1 id="💡-머신러닝이란">💡 머신러닝이란?</h1>
 <h3 id="인공지능">인공지능</h3>
 <ul>
