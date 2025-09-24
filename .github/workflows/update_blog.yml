@@ -32,6 +32,15 @@ jobs:
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+        # --- ✨ 디버깅을 위해 추가된 부분 시작 ✨ ---
+        echo "--- Listing files in velog-posts directory ---"
+        ls -l velog-posts/
+        echo "--- Checking git status ---"
+        git status
+        # --- ✨ 디버깅을 위해 추가된 부분 끝 ✨ ---
+
+        
         # 변경사항이 있는지 확인
         if ! git diff --quiet; then
           git add velog-posts/*
